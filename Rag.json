@@ -1,0 +1,503 @@
+{
+  "name": "Rag",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1Arl2h9GskMdEJ8hsi_muEn4o4M-S-T2c",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Arl2h9GskMdEJ8hsi_muEn4o4M-S-T2c"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "11b80183-7510-4a39-9675-23373c973e03",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VY9Mm5Qt4ta8mSvH",
+          "name": "Google Drive fInal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "826f36ac-bea5-43d4-9ad2-66947db9e4af",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VY9Mm5Qt4ta8mSvH",
+          "name": "Google Drive fInal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ragagent",
+          "mode": "list",
+          "cachedResultName": "ragagent"
+        },
+        "options": {
+          "pineconeNamespace": "FAQ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        0
+      ],
+      "id": "17cb1ef3-ae9f-46f8-a786-db8b43e402bd",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "LjyrKTX5AlgepHcL",
+          "name": "PineconeApi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        224
+      ],
+      "id": "c0e4dfcd-2b43-4f52-bd55-b355386b28ea",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "kOgNpFfNfXbOkTST",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        224
+      ],
+      "id": "d3613706-6271-494a-ad8e-4b22dd3075a4",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 512,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        272,
+        432
+      ],
+      "id": "3f251e0f-7704-4696-b118-e8988cc208ff",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        528,
+        0
+      ],
+      "id": "4ca59656-21cc-46f3-a645-903018f75409",
+      "name": "When chat message received",
+      "webhookId": "ed2e7d48-ac60-4e96-8a14-c040cd640d11"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        784,
+        0
+      ],
+      "id": "768b3dcd-320f-4e99-95d3-8246663e5bae",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        224
+      ],
+      "id": "72e5af9d-2734-41b6-a12d-2eb01aca3698",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kOgNpFfNfXbOkTST",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to access policy and FAQ database",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ragagent",
+          "mode": "list",
+          "cachedResultName": "ragagent"
+        },
+        "options": {
+          "pineconeNamespace": "FAQ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        224
+      ],
+      "id": "923d6147-b5a6-4876-b011-c71e787c729e",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "LjyrKTX5AlgepHcL",
+          "name": "PineconeApi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        432
+      ],
+      "id": "50949914-86ae-41c3-b5c6-9ea4ac5501a0",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "kOgNpFfNfXbOkTST",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "Download file": [
+      {
+        "json": {
+          "parents": [
+            "1Arl2h9GskMdEJ8hsi_muEn4o4M-S-T2c"
+          ],
+          "lastModifyingUser": {
+            "displayName": "A4_004_Anushka",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "04284583653278566028",
+            "emailAddress": "anushka.s.gurav@cumminscollege.in",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocILj0eFKwEC2yverkUhE1vHOWXAluZEw3c2AiRIeUem2402RQ=s64"
+          },
+          "owners": [
+            {
+              "displayName": "A4_004_Anushka",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "04284583653278566028",
+              "emailAddress": "anushka.s.gurav@cumminscollege.in",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocILj0eFKwEC2yverkUhE1vHOWXAluZEw3c2AiRIeUem2402RQ=s64"
+            }
+          ],
+          "permissions": [
+            {
+              "kind": "drive#permission",
+              "id": "04284583653278566028",
+              "type": "user",
+              "emailAddress": "anushka.s.gurav@cumminscollege.in",
+              "role": "owner",
+              "displayName": "A4_004_Anushka",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocILj0eFKwEC2yverkUhE1vHOWXAluZEw3c2AiRIeUem2402RQ=s64",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "spaces": [
+            "drive"
+          ],
+          "capabilities": {
+            "canAcceptOwnership": false,
+            "canAddChildren": false,
+            "canAddMyDriveParent": false,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canChangeItemDownloadRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canChangeViewersCanCopyContent": true,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDisableInheritedPermissions": false,
+            "canDownload": true,
+            "canEdit": true,
+            "canEnableInheritedPermissions": true,
+            "canListChildren": false,
+            "canModifyContent": true,
+            "canModifyContentRestriction": true,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canModifyLabels": false,
+            "canMoveChildrenWithinDrive": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canMoveItemOutOfDrive": true,
+            "canMoveItemWithinDrive": true,
+            "canReadLabels": false,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRemoveContentRestriction": false,
+            "canRemoveMyDriveParent": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "permissionIds": [
+            "04284583653278566028"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "downloadRestrictions": {
+            "itemDownloadRestriction": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            },
+            "effectiveDownloadRestrictionWithContext": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            }
+          },
+          "kind": "drive#file",
+          "id": "1ZrO6pBjN6rwSrq9qXKDSYT2uxgflmLod",
+          "name": "policy.pdf",
+          "mimeType": "application/pdf",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "version": "3",
+          "webContentLink": "https://drive.google.com/uc?id=1ZrO6pBjN6rwSrq9qXKDSYT2uxgflmLod&export=download",
+          "webViewLink": "https://drive.google.com/file/d/1ZrO6pBjN6rwSrq9qXKDSYT2uxgflmLod/view?usp=drivesdk",
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/application/pdf",
+          "hasThumbnail": true,
+          "thumbnailLink": "https://lh3.googleusercontent.com/drive-storage/AJQWtBMC8o9DFAyONMedkNh_q6JoyhMfnM5SeZDfbDNuY69Jg_qk1aLPBpUfE2E3hekyPZ_Dr-2zrIl8zSq2KBsAeKCgwACsSTh-rebjXw0npDRKwU4=s220",
+          "thumbnailVersion": "1",
+          "viewedByMe": true,
+          "viewedByMeTime": "2026-01-07T17:36:18.142Z",
+          "createdTime": "2026-01-07T17:36:18.142Z",
+          "modifiedTime": "2026-01-07T17:36:00.000Z",
+          "modifiedByMeTime": "2026-01-07T17:36:00.000Z",
+          "modifiedByMe": true,
+          "shared": false,
+          "ownedByMe": true,
+          "viewersCanCopyContent": true,
+          "copyRequiresWriterPermission": false,
+          "writersCanShare": true,
+          "originalFilename": "policy.pdf",
+          "fullFileExtension": "pdf",
+          "fileExtension": "pdf",
+          "md5Checksum": "757d399d3b31d4c026080cada81f288b",
+          "sha1Checksum": "bffa3638b07a4fb79a6ca1e31fe38ae0acd6b08c",
+          "sha256Checksum": "3f3964ccf3ed3fc5721d19b70798d998871356319e3f5b81ddd5307bb4c38738",
+          "size": "2300158",
+          "quotaBytesUsed": "2300158",
+          "headRevisionId": "0BzynXU1r36yOOUpsUzZ0VStYUVJ2aUxwN0RiRU1BZm9laGpzPQ",
+          "isAppAuthorized": false,
+          "inheritedPermissionsDisabled": false
+        },
+        "binary": {
+          "data": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "policy.pdf",
+            "id": "filesystem-v2:workflows/IeWlk0agbkpdKna2/executions/29/binary_data/7342712e-deb9-4618-b19c-03a68d9cbee6",
+            "fileSize": "2.3 MB"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
